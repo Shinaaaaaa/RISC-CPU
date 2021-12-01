@@ -372,6 +372,10 @@ rob rob(
     .cdb_alu_value_in (cdb_alu_value),
     .cdb_alu_addr_in (cdb_alu_addr),
 
+    .lsqueue_en_in (lsqueue_rob_en),
+    .lsqueue_dest_in (lsqueue_rob_dest),
+    .lsqueue_value_in (lsqueue_rob_value),
+
     .addressUnit_en_in (addressUnit_rob_en),
     .addressUnit_dest_in (addressUnit_rob_dest),
     .addressUnit_address_in (addressUnit_rob_address),

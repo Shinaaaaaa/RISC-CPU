@@ -28,7 +28,7 @@ module LBuffer(
     input wire ram_bus_rdy_in,
     input wire ram_bus_data_en_in,
     input wire[`INSTRUCTION_WIDTH] ram_bus_data_in,
-    output reg ram_bus_en_out,
+    output wire ram_bus_en_out,
     output reg[`INSTRUCTION_WIDTH] ram_bus_A_out,
     output reg[`ROB_WIDTH] ram_bus_dest_out,
     output reg[`INST_TYPE_WIDTH] ram_bus_inst_type_out
@@ -46,13 +46,11 @@ integer i;
 
 always @(posedge clk_in) begin
     cdb_lbuffer_en_out <= `DISABLE;
-    ram_bus_en_out <= `DISABLE;
     if (rst_in) begin
         head <= `NULL;
         tail <= `NULL;
         status <= `IDLE;
         cdb_lbuffer_en_out <= `DISABLE;
-        ram_bus_en_out <= `DISABLE;
     end
     else if (rdy_in) begin
         if (rob_flush_in) begin
@@ -60,7 +58,6 @@ always @(posedge clk_in) begin
             tail <= `NULL;
             status <= `IDLE;
             cdb_lbuffer_en_out <= `DISABLE;
-            ram_bus_en_out <= `DISABLE;
         end
         else begin
             if (head != tail + 1 && addressUnit_en_in) begin
@@ -73,7 +70,6 @@ always @(posedge clk_in) begin
                 if (!rob_load_check_sameaddress_in) begin
                     if (ram_bus_rdy_in && !ram_bus_data_en_in) begin
                         status <= `BUSY;
-                        if (status == `IDLE) ram_bus_en_out <= `ENABLE;
                         ram_bus_A_out <= lbuffer_A[head];
                         ram_bus_dest_out <= lbuffer_dest[head];
                         ram_bus_inst_type_out <= lbuffer_inst_type[head];
@@ -82,7 +78,7 @@ always @(posedge clk_in) begin
                         status <= `IDLE;
                         cdb_lbuffer_en_out <= `ENABLE;
                         cdb_lbuffer_dest_out <= lbuffer_dest[head];
-                        cdb_lbuffer_value_out <= ram_bus_data_en_in;
+                        cdb_lbuffer_value_out <= ram_bus_data_in;
                         head <= (head + 1) % lbufferlength;
                         status <= `IDLE;
                     end  
@@ -107,6 +103,7 @@ always @(posedge clk_in) begin
     end
 end
 
+assign ram_bus_en_out = (!rst_in && !rob_flush_in && rdy_in && head != tail && !rob_load_check_sameaddress_in && status == `IDLE);
 assign lsqueue_rdy_out = (head != (tail + 1) % lbufferlength);
 assign rob_load_check_en_out = (head != tail);
 assign rob_load_check_dest_out = lbuffer_dest[head];

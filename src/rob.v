@@ -30,7 +30,7 @@ module rob(
 
     input wire lsqueue_en_in,
     input wire[`ROB_WIDTH] lsqueue_dest_in,
-    input wire[`INSTRUCTION_WIDTH] lsqueue_value_in,//TODO
+    input wire[`INSTRUCTION_WIDTH] lsqueue_value_in,
 
     input wire addressUnit_en_in,
     input wire[`ROB_WIDTH] addressUnit_dest_in,
@@ -49,7 +49,7 @@ module rob(
 
     input wire ram_bus_rdy_in,
     input wire ram_bus_finish_in,
-    output reg ram_bus_en_out,
+    output wire ram_bus_en_out,
     output reg[`ADDRESS_WIDTH] ram_bus_address_out,
     output reg[`INSTRUCTION_WIDTH] ram_bus_wdata_out,
     output reg[`INST_TYPE_WIDTH] ram_bus_inst_type_out,
@@ -79,14 +79,12 @@ module rob(
     always @(posedge clk_in) begin
         if_en_out <= `DISABLE;
         flush <= `DISABLE;
-        ram_bus_en_out <= `DISABLE;
         register_en_out <= `DISABLE;
         if (rst_in) begin
             head <= 1'b0;
             tail <= 1'b0;
             if_en_out <= `DISABLE;
             flush <= `DISABLE;
-            ram_bus_en_out <= `DISABLE;
             register_en_out <= `DISABLE;
             status <= `IDLE;
             for (i = 0 ; i <= roblength - 1; i = i + 1) begin
@@ -137,9 +135,7 @@ module rob(
                     if (value[head]) begin
                         if_en_out <= `ENABLE;
                         if_pc_out <= addr[head];
-                        if_en_out <= `DISABLE;
-                        flush <= `DISABLE;
-                        ram_bus_en_out <= `DISABLE;
+                        flush <= `ENABLE;
                         register_en_out <= `DISABLE;
                         status <= `IDLE;
                         head <= 1'b0;
@@ -157,7 +153,6 @@ module rob(
                 end
                 else if (`SB <= inst_type[head] && inst_type[head] <= `SW) begin
                     if (ram_bus_rdy_in && !ram_bus_finish_in) begin
-                        if (status == `IDLE) ram_bus_en_out <= `ENABLE;
                         ram_bus_address_out <= addr[head];
                         ram_bus_wdata_out <= value[head];
                         ram_bus_inst_type_out <= inst_type[head];
@@ -234,6 +229,7 @@ module rob(
         end
     end
 
+    assign ram_bus_en_out = (!rst_in && head != tail && rdy[head] && `SB <= inst_type[head] && inst_type[head] <= `SW && status == `IDLE);
     assign instqueue_rdy_out = (head != (tail + 1) % roblength);
     assign dispatcher_rs1_rdy_out = rdy[dispatcher_rs1_in];
     assign dispatcher_rs1_data_out = value[dispatcher_rs1_in];

@@ -37,6 +37,7 @@ localparam IF = 0;
 localparam LB = 1;
 localparam ROB = 2;
 
+localparam Stage_Begin = 3'b101;
 localparam Stage_0 = 3'b000;
 localparam Stage_1 = 3'b001;
 localparam Stage_2 = 3'b010;
@@ -53,73 +54,51 @@ reg[2 : 0] current_stage;
 reg[`INSTRUCTION_WIDTH] inst_tmp;
 
 always @(posedge clk_in) begin
-    if (rst_in) begin
-        ifetch_en_out <= `DISABLE;
-        lbuffer_data_en_out <= `DISABLE;
-        rob_finish_out <= `DISABLE;
-        owner <= IF;
-        status <= `IDLE;
-        current_stage <= Stage_0;
-        inst_tmp <= `NULL;
-    end
-    else if (rdy_in) begin
-        if (rob_flush_in) begin
-            ifetch_en_out <= `DISABLE;
-            lbuffer_data_en_out <= `DISABLE;
-            rob_finish_out <= `DISABLE;
-            owner <= IF;
-            status <= `IDLE;
-            current_stage <= Stage_0;
-            inst_tmp <= `NULL;
-        end
-        else begin
-            if (status == `IDLE) begin
-                case (owner)
-                    IF: begin
-                        if (ifetch_en_in) begin
-                            status <= `BUSY;
-                            owner <= IF;
-                        end 
-                        else if (lbuffer_en_in) begin
-                            status <= `BUSY;
-                            owner <= LB;
-                        end 
-                        else if (rob_en_in) begin
-                            status <= `BUSY;
-                            owner <= ROB;
-                        end 
-                    end
-                    LB: begin
-                        if (lbuffer_en_in) begin
-                            status <= `BUSY;
-                            owner <= LB;
-                        end 
-                        else if (rob_en_in) begin
-                            status <= `BUSY;
-                            owner <= ROB;
-                        end 
-                        else if (ifetch_en_in) begin
-                            status <= `BUSY;
-                            owner <= IF;
-                        end 
-                    end
-                    ROB: begin
-                        if (rob_en_in) begin
-                            status <= `BUSY;
-                            owner <= ROB;
-                        end 
-                        else if (ifetch_en_in) begin
-                            status <= `BUSY;
-                            owner <= IF;
-                        end 
-                        else if (lbuffer_en_in) begin
-                            status <= `BUSY;
-                            owner <= LB;
-                        end 
-                    end 
-                endcase
+    if (status == `IDLE) begin
+        case (owner)
+            IF: begin
+                if (ifetch_en_in) begin
+                    status <= `BUSY;
+                    owner <= IF;
+                end 
+                else if (lbuffer_en_in) begin
+                    status <= `BUSY;
+                    owner <= LB;
+                end 
+                else if (rob_en_in) begin
+                    status <= `BUSY;
+                    owner <= ROB;
+                end 
             end
-        end
+            LB: begin
+                if (lbuffer_en_in) begin
+                    status <= `BUSY;
+                    owner <= LB;
+                end 
+                else if (rob_en_in) begin
+                    status <= `BUSY;
+                    owner <= ROB;
+                end 
+                else if (ifetch_en_in) begin
+                    status <= `BUSY;
+                    owner <= IF;
+                end 
+            end
+            ROB: begin
+                if (rob_en_in) begin
+                    status <= `BUSY;
+                    owner <= ROB;
+                end 
+                else if (ifetch_en_in) begin
+                    status <= `BUSY;
+                    owner <= IF;
+                end 
+                else if (lbuffer_en_in) begin
+                    status <= `BUSY;
+                    owner <= LB;
+                end 
+            end 
+        endcase
     end
 end
 
@@ -133,7 +112,7 @@ always @(posedge clk_in) begin
         rob_finish_out <= `DISABLE;
         owner <= IF;
         status <= `IDLE;
-        current_stage <= Stage_0;
+        current_stage <= Stage_Begin;
         inst_tmp <= `NULL;
     end
     else if (rdy_in) begin
@@ -143,13 +122,14 @@ always @(posedge clk_in) begin
             rob_finish_out <= `DISABLE;
             owner <= IF;
             status <= `IDLE;
-            current_stage <= Stage_0;
+            current_stage <= Stage_Begin;
             inst_tmp <= `NULL;  
         end
         else begin
             if (status == `BUSY) begin
                 if (owner == IF) begin
                     case (current_stage)
+                        Stage_Begin: current_stage <= Stage_0;
                         Stage_0: current_stage <= Stage_1;
                         Stage_1: begin
                             inst_tmp[7 : 0] <= ram_rdata_in;
@@ -165,7 +145,7 @@ always @(posedge clk_in) begin
                         end
                         Stage_4: begin
                             ifetch_inst_out <= {ram_rdata_in , inst_tmp[23 : 0]};
-                            current_stage <= Stage_0;
+                            current_stage <= Stage_Begin;
                             ifetch_en_out <= `ENABLE;
                             inst_tmp <= `NULL;
                             status <= `IDLE;
@@ -176,18 +156,20 @@ always @(posedge clk_in) begin
                     case (lbuffer_inst_type_in)
                         `LB: begin
                             case (current_stage)
+                                Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1; 
                                 Stage_1: begin
                                     lbuffer_data_out <= $signed(ram_rdata_in);
                                     lbuffer_data_en_out <= `ENABLE; 
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
-                                    current_stage <= Stage_0;
+                                    current_stage <= Stage_Begin;
                                 end 
                             endcase
                         end
                         `LH: begin
                             case (current_stage)
+                                Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1;
                                 Stage_1: begin
                                     inst_tmp[7 : 0] <= ram_rdata_in;
@@ -198,12 +180,13 @@ always @(posedge clk_in) begin
                                     lbuffer_data_en_out <= `ENABLE; 
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
-                                    current_stage <= Stage_0;
+                                    current_stage <= Stage_Begin;
                                 end
                             endcase
                         end
                         `LW: begin
                             case (current_stage)
+                                Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1;
                                 Stage_1: begin
                                     inst_tmp[7 : 0] <= ram_rdata_in;
@@ -222,24 +205,26 @@ always @(posedge clk_in) begin
                                     lbuffer_data_en_out <= `ENABLE; 
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
-                                    current_stage <= Stage_0;                           
+                                    current_stage <= Stage_Begin;                           
                                 end
                             endcase
                         end
                         `LBU: begin
                             case (current_stage)
+                                Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1; 
                                 Stage_1: begin
                                     lbuffer_data_out <= ram_rdata_in;
                                     lbuffer_data_en_out <= `ENABLE; 
                                     inst_tmp <= `NULL;
                                     status <= `IDLE; 
-                                    current_stage <= Stage_0;
+                                    current_stage <= Stage_Begin;
                                 end
                             endcase
                         end
                         `LHU: begin
                             case (current_stage)
+                                Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1;
                                 Stage_1: begin
                                     inst_tmp[7 : 0] <= ram_rdata_in;
@@ -250,7 +235,7 @@ always @(posedge clk_in) begin
                                     lbuffer_data_en_out <= `ENABLE; 
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
-                                    current_stage <= Stage_0;
+                                    current_stage <= Stage_Begin;
                                 end
                             endcase
                         end
@@ -260,29 +245,32 @@ always @(posedge clk_in) begin
                     case (rob_inst_type_in)
                         `SB: begin
                             case (current_stage)
+                                Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1; 
                                 Stage_1: begin
                                     rob_finish_out <= 1'b1;
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
-                                    current_stage <= Stage_0;
+                                    current_stage <= Stage_Begin;
                                 end 
                             endcase
                         end
                         `SH: begin
                             case (current_stage)
+                                Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1;
                                 Stage_1: current_stage <= Stage_2; 
                                 Stage_2: begin
                                     rob_finish_out <= 1'b1;
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
-                                    current_stage <= Stage_0; 
+                                    current_stage <= Stage_Begin; 
                                 end
                             endcase
                         end
                         `SW: begin
                             case (current_stage)
+                                Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1;
                                 Stage_1: current_stage <= Stage_2;
                                 Stage_2: current_stage <= Stage_3;
@@ -291,7 +279,7 @@ always @(posedge clk_in) begin
                                     rob_finish_out <= 1'b1;
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
-                                    current_stage <= Stage_0; 
+                                    current_stage <= Stage_Begin; 
                                 end
                             endcase
                         end
@@ -385,8 +373,8 @@ always @(*) begin
     end
 end
 
-assign ifetch_rdy_out = (owner == IF || status == `IDLE) ? `ENABLE : `DISABLE;
-assign lbuffer_rdy_out = (owner == LB || status == `IDLE) ? `ENABLE : `DISABLE;
-assign rob_rdy_out = (owner == ROB || status == `IDLE) ? `ENABLE : `DISABLE;
+assign ifetch_rdy_out = (owner == IF) ? `ENABLE : `DISABLE;
+assign lbuffer_rdy_out = (owner == LB) ? `ENABLE : `DISABLE;
+assign rob_rdy_out = (owner == ROB) ? `ENABLE : `DISABLE;
 
 endmodule
