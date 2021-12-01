@@ -148,6 +148,6 @@ always @(posedge clk_in) begin
     end
 end
 
-assign instqueue_rdy_out = (head == (tail + 1) % LSQueuelength);
+assign instqueue_rdy_out = (head != (tail + 1) % LSQueuelength);
 
 endmodule

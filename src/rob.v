@@ -157,7 +157,7 @@ module rob(
                 end
                 else if (`SB <= inst_type[head] && inst_type[head] <= `SW) begin
                     if (ram_bus_rdy_in && !ram_bus_finish_in) begin
-                        ram_bus_en_out <= `ENABLE;
+                        if (status == `IDLE) ram_bus_en_out <= `ENABLE;
                         ram_bus_address_out <= addr[head];
                         ram_bus_wdata_out <= value[head];
                         ram_bus_inst_type_out <= inst_type[head];
@@ -234,12 +234,11 @@ module rob(
         end
     end
 
-    assign instqueue_rdy_out = (head == (tail + 1) % roblength) ? `DISABLE : `ENABLE;
+    assign instqueue_rdy_out = (head != (tail + 1) % roblength);
     assign dispatcher_rs1_rdy_out = rdy[dispatcher_rs1_in];
     assign dispatcher_rs1_data_out = value[dispatcher_rs1_in];
     assign dispatcher_rs2_rdy_out = rdy[dispatcher_rs2_in];
     assign dispatcher_rs2_data_out = value[dispatcher_rs2_in];
     assign dispatcher_idle_pos_out = tail;
-    assign ram_bus_req_out = (`SB <= inst_type[head] && inst_type[head] <= `SW) ? `ENABLE : `DISABLE;
 
 endmodule

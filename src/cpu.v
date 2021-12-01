@@ -503,7 +503,7 @@ ram_RW ram_RW(
     .ram_addr_out (mem_a),
     .ram_rw_out (mem_wr),
 
-    .ifetch_bus_rdy_out (ram_bus_ifetch_rdy),
+    .ifetch_rdy_out (ram_bus_ifetch_rdy),
     .ifetch_en_out (ram_bus_ifetch_en),
     .ifetch_inst_out (ram_bus_ifetch_inst),
     .ifetch_en_in (ifetch_ram_bus_en),

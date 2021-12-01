@@ -64,41 +64,40 @@ always @(posedge clk_in) begin
         end
         else begin
             if (head != tail + 1 && addressUnit_en_in) begin
-                lbuffer_A[head] <= addressUnit_A_in;
-                lbuffer_dest[head] <= addressUnit_dest_in;
-                lbuffer_inst_type[head] <= addressUnit_inst_type_in;
-                head <= (head + 1) % lbufferlength;
+                lbuffer_A[tail] <= addressUnit_A_in;
+                lbuffer_dest[tail] <= addressUnit_dest_in;
+                lbuffer_inst_type[tail] <= addressUnit_inst_type_in;
+                tail <= (tail + 1) % lbufferlength;
             end
             if (head != tail) begin
-                if (status == `IDLE) begin
-                    if (!rob_load_check_sameaddress_in) status <= `BUSY;
-                    else begin
-                        if (rob_load_check_forwarding_en_in) begin
-                            cdb_lbuffer_en_out <= `ENABLE;
-                            case (lbuffer_inst_type[head])
-                                `LB: cdb_lbuffer_value_out <= $signed(rob_load_check_forwarding_data_in[7 : 0]);
-                                `LH: cdb_lbuffer_value_out <= $signed(rob_load_check_forwarding_data_in[15 : 0]);
-                                `LW: cdb_lbuffer_value_out <= rob_load_check_forwarding_data_in[31 : 0];
-                                `LBU: cdb_lbuffer_value_out <= rob_load_check_forwarding_data_in[7 : 0];
-                                `LHU: cdb_lbuffer_value_out <= rob_load_check_forwarding_data_in[15 : 0];
-                            endcase
-                            cdb_lbuffer_dest_out <= lbuffer_dest[head];
-                            head <= (head + 1) % lbufferlength;
-                            status <= `IDLE;
-                        end
-                    end
-                end
-                else if (status == `BUSY) begin
+                if (!rob_load_check_sameaddress_in) begin
                     if (ram_bus_rdy_in && !ram_bus_data_en_in) begin
-                        ram_bus_en_out <= `ENABLE;
+                        status <= `BUSY;
+                        if (status == `IDLE) ram_bus_en_out <= `ENABLE;
                         ram_bus_A_out <= lbuffer_A[head];
                         ram_bus_dest_out <= lbuffer_dest[head];
                         ram_bus_inst_type_out <= lbuffer_inst_type[head];
                     end
                     else if (ram_bus_data_en_in) begin
+                        status <= `IDLE;
                         cdb_lbuffer_en_out <= `ENABLE;
                         cdb_lbuffer_dest_out <= lbuffer_dest[head];
                         cdb_lbuffer_value_out <= ram_bus_data_en_in;
+                        head <= (head + 1) % lbufferlength;
+                        status <= `IDLE;
+                    end  
+                end
+                else begin
+                    if (rob_load_check_forwarding_en_in) begin
+                        cdb_lbuffer_en_out <= `ENABLE;
+                        case (lbuffer_inst_type[head])
+                            `LB: cdb_lbuffer_value_out <= $signed(rob_load_check_forwarding_data_in[7 : 0]);
+                            `LH: cdb_lbuffer_value_out <= $signed(rob_load_check_forwarding_data_in[15 : 0]);
+                            `LW: cdb_lbuffer_value_out <= rob_load_check_forwarding_data_in[31 : 0];
+                            `LBU: cdb_lbuffer_value_out <= rob_load_check_forwarding_data_in[7 : 0];
+                            `LHU: cdb_lbuffer_value_out <= rob_load_check_forwarding_data_in[15 : 0];
+                        endcase
+                        cdb_lbuffer_dest_out <= lbuffer_dest[head];
                         head <= (head + 1) % lbufferlength;
                         status <= `IDLE;
                     end
@@ -108,7 +107,7 @@ always @(posedge clk_in) begin
     end
 end
 
-assign lsqueue_rdy_out = (head == (tail + 1) % lbufferlength);
+assign lsqueue_rdy_out = (head != (tail + 1) % lbufferlength);
 assign rob_load_check_en_out = (head != tail);
 assign rob_load_check_dest_out = lbuffer_dest[head];
 assign rob_load_check_address_out = lbuffer_A[head];

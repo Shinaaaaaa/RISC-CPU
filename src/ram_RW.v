@@ -10,7 +10,7 @@ module ram_RW(
     output reg[`ADDRESS_WIDTH] ram_addr_out,
     output reg ram_rw_out,
 
-    output wire ifetch_bus_rdy_out,
+    output wire ifetch_rdy_out,
     output reg ifetch_en_out,
     output reg[`INSTRUCTION_WIDTH] ifetch_inst_out,
     input wire ifetch_en_in,
@@ -52,9 +52,11 @@ reg status;
 reg[2 : 0] current_stage;
 reg[`INSTRUCTION_WIDTH] inst_tmp;
 
-
 always @(posedge clk_in) begin
     if (rst_in) begin
+        ifetch_en_out <= `DISABLE;
+        lbuffer_data_en_out <= `DISABLE;
+        rob_finish_out <= `DISABLE;
         owner <= IF;
         status <= `IDLE;
         current_stage <= Stage_0;
@@ -62,6 +64,9 @@ always @(posedge clk_in) begin
     end
     else if (rdy_in) begin
         if (rob_flush_in) begin
+            ifetch_en_out <= `DISABLE;
+            lbuffer_data_en_out <= `DISABLE;
+            rob_finish_out <= `DISABLE;
             owner <= IF;
             status <= `IDLE;
             current_stage <= Stage_0;
@@ -119,7 +124,13 @@ always @(posedge clk_in) begin
 end
 
 always @(posedge clk_in) begin
+    ifetch_en_out <= `DISABLE;
+    lbuffer_data_en_out <= `DISABLE;
+    rob_finish_out <= `DISABLE;
     if (rst_in) begin
+        ifetch_en_out <= `DISABLE;
+        lbuffer_data_en_out <= `DISABLE;
+        rob_finish_out <= `DISABLE;
         owner <= IF;
         status <= `IDLE;
         current_stage <= Stage_0;
@@ -127,6 +138,9 @@ always @(posedge clk_in) begin
     end
     else if (rdy_in) begin
         if (rob_flush_in) begin
+            ifetch_en_out <= `DISABLE;
+            lbuffer_data_en_out <= `DISABLE;
+            rob_finish_out <= `DISABLE;
             owner <= IF;
             status <= `IDLE;
             current_stage <= Stage_0;
@@ -134,23 +148,20 @@ always @(posedge clk_in) begin
         end
         else begin
             if (status == `BUSY) begin
-                if (owner == IF && ifetch_en_in) begin
+                if (owner == IF) begin
                     case (current_stage)
                         Stage_0: current_stage <= Stage_1;
                         Stage_1: begin
                             inst_tmp[7 : 0] <= ram_rdata_in;
                             current_stage <= Stage_2;
-                            ifetch_en_out <= `DISABLE;
                         end
                         Stage_2: begin
                             inst_tmp[15 : 8] <= ram_rdata_in;
                             current_stage <= Stage_3;
-                            ifetch_en_out <= `DISABLE;
                         end
                         Stage_3: begin
                             inst_tmp[23 : 16] <= ram_rdata_in;
                             current_stage <= Stage_4;
-                            ifetch_en_out <= `DISABLE;
                         end
                         Stage_4: begin
                             ifetch_inst_out <= {ram_rdata_in , inst_tmp[23 : 0]};
@@ -159,10 +170,9 @@ always @(posedge clk_in) begin
                             inst_tmp <= `NULL;
                             status <= `IDLE;
                         end
-                        default: ifetch_en_out <= `DISABLE;
                     endcase 
                 end
-                else if (owner == LB && lbuffer_en_in) begin
+                else if (owner == LB) begin
                     case (lbuffer_inst_type_in)
                         `LB: begin
                             case (current_stage)
@@ -246,7 +256,7 @@ always @(posedge clk_in) begin
                         end
                     endcase
                 end
-                else if (owner == ROB && rob_en_in) begin
+                else if (owner == ROB) begin
                     case (rob_inst_type_in)
                         `SB: begin
                             case (current_stage)
@@ -293,9 +303,9 @@ always @(posedge clk_in) begin
 end
 
 always @(*) begin
-    if (!rst_in) begin
+    if (!rst_in && status == `BUSY) begin
         case (current_stage)
-            Stage_1: begin
+            Stage_0: begin
                 case (owner)
                     IF: begin
                         ram_rw_out <= read;
@@ -314,7 +324,7 @@ always @(*) begin
                     end
                 endcase
             end
-            Stage_2: begin
+            Stage_1: begin
                 case (owner)
                     IF: begin
                         ram_rw_out <= read;
@@ -333,7 +343,7 @@ always @(*) begin
                     end
                 endcase
             end
-            Stage_3: begin
+            Stage_2: begin
                 case (owner)
                     IF: begin
                         ram_rw_out <= read;
@@ -352,7 +362,7 @@ always @(*) begin
                     end
                 endcase
             end
-            Stage_4: begin
+            Stage_3: begin
                 case (owner)
                     IF: begin
                         ram_rw_out <= read;
@@ -375,7 +385,7 @@ always @(*) begin
     end
 end
 
-assign ifetch_bus_rdy_out = (owner == IF || status == `IDLE) ? `ENABLE : `DISABLE;
+assign ifetch_rdy_out = (owner == IF || status == `IDLE) ? `ENABLE : `DISABLE;
 assign lbuffer_rdy_out = (owner == LB || status == `IDLE) ? `ENABLE : `DISABLE;
 assign rob_rdy_out = (owner == ROB || status == `IDLE) ? `ENABLE : `DISABLE;
 
