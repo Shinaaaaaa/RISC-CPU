@@ -68,6 +68,6 @@ always @(posedge clk_in) begin
     end
 end
 
-assign ifetch_rdy_out = (head != (tail + 1) % queueLen);
+assign ifetch_rdy_out = (head != (tail + 1) % queueLen && head != (tail + 2) % queueLen);
 
 endmodule

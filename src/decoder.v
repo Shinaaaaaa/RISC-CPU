@@ -69,7 +69,7 @@ always @(*) begin
                 dispatcher_rs2_out <= instqueue_inst_in[24 : 20];
                 case (instqueue_inst_in[14 : 12])
                     3'b000: begin
-                        if (instqueue_inst_in[31 : 25] == 7'b0100000) dispatcher_inst_type_out <= `ADD; 
+                        if (instqueue_inst_in[31 : 25] == 7'b0000000) dispatcher_inst_type_out <= `ADD; 
                         else dispatcher_inst_type_out <= `SUB; 
                     end
                     3'b100: dispatcher_inst_type_out <= `XOR;
@@ -77,7 +77,7 @@ always @(*) begin
                     3'b111: dispatcher_inst_type_out <= `AND;
                     3'b001: dispatcher_inst_type_out <= `SLL;
                     3'b101: begin
-                        if (instqueue_inst_in[31 : 25] == 7'b0) dispatcher_inst_type_out <= `SRL;
+                        if (instqueue_inst_in[31 : 25] == 7'b0000000) dispatcher_inst_type_out <= `SRL;
                         else dispatcher_inst_type_out <= `SRA;
                     end
                     3'b010: dispatcher_inst_type_out <= `SLT;

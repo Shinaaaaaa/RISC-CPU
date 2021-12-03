@@ -81,8 +81,8 @@ module rob(
         flush <= `DISABLE;
         register_en_out <= `DISABLE;
         if (rst_in) begin
-            head <= 1'b0;
-            tail <= 1'b0;
+            head <= 1'b1;
+            tail <= 1'b1;
             if_en_out <= `DISABLE;
             flush <= `DISABLE;
             register_en_out <= `DISABLE;
@@ -98,7 +98,7 @@ module rob(
                 inst_type[tail] <= dispatcher_inst_type_in;
                 reg_pos[tail] <= dispatcher_reg_pos_in;
                 rdy[tail] <= 1'b0;
-                tail <= (tail + 1) % roblength;
+                tail <= tail % (roblength - 1) + 1;
             end
 
             if (cdb_alu_en_in) begin
@@ -124,7 +124,7 @@ module rob(
             if (status == `BUSY) begin
                 if (ram_bus_finish_in) begin
                     status <= `IDLE;
-                    head <= (head + 1) % roblength;
+                    head <= head % (roblength - 1) + 1;
                     busy[head] <= `NULL;
                     rdy[head] <= `NULL;
                 end
@@ -138,8 +138,8 @@ module rob(
                         flush <= `ENABLE;
                         register_en_out <= `DISABLE;
                         status <= `IDLE;
-                        head <= 1'b0;
-                        tail <= 1'b0;
+                        head <= 1'b1;
+                        tail <= 1'b1;
                         for (i = 0 ; i <= roblength - 1 ; i = i + 1) begin
                             busy[i] <= `IDLE;
                             rdy[i] <= `NULL;
@@ -164,7 +164,7 @@ module rob(
                     register_reg_pos_out <= reg_pos[head];
                     register_dest_out <= head;
                     register_value_out <= value[head];
-                    head <= (head + 1) % roblength;
+                    head <= head % (roblength - 1) + 1;
                     busy[head] <= `NULL;
                     rdy[head] <= `NULL;
                     if (inst_type[head] == `JAL || inst_type[head] == `JALR) begin
@@ -172,8 +172,8 @@ module rob(
                         if_pc_out <= addr[head];
                         flush <= `ENABLE;
                         status <= `IDLE;
-                        head <= 1'b0;
-                        tail <= 1'b0;
+                        head <= 1'b1;
+                        tail <= 1'b1;
                         for (i = 0 ; i <= roblength - 1 ; i = i + 1) begin
                             busy[i] <= `IDLE;
                             rdy[i] <= `NULL;
@@ -214,7 +214,7 @@ module rob(
                         end
                     end
                 end
-                for (i = 0 ; i < lbuffer_load_check_address_in ; i = i + 1) begin
+                for (i = 1 ; i < lbuffer_load_check_address_in ; i = i + 1) begin
                     if (`SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
                             lbuffer_load_check_sameaddress_out <= 1'b1;
@@ -230,11 +230,11 @@ module rob(
     end
 
     assign ram_bus_en_out = (!rst_in && head != tail && rdy[head] && `SB <= inst_type[head] && inst_type[head] <= `SW && status == `IDLE);
-    assign instqueue_rdy_out = (head != (tail + 1) % roblength);
-    assign dispatcher_rs1_rdy_out = rdy[dispatcher_rs1_in];
-    assign dispatcher_rs1_data_out = value[dispatcher_rs1_in];
-    assign dispatcher_rs2_rdy_out = rdy[dispatcher_rs2_in];
-    assign dispatcher_rs2_data_out = value[dispatcher_rs2_in];
+    assign instqueue_rdy_out = (head != tail % (roblength - 1) + 1) && (head != (tail + 1) % (roblength - 1) + 1);
+    assign dispatcher_rs1_rdy_out = rdy[dispatcher_rs1_in] || (cdb_alu_en_in && cdb_alu_dest_in == dispatcher_rs1_in) || (cdb_lbuffer_en_in && cdb_lbuffer_dest_in == dispatcher_rs1_in);
+    assign dispatcher_rs1_data_out = rdy[dispatcher_rs1_in] ? value[dispatcher_rs1_in] : cdb_alu_en_in ? cdb_alu_value_in : cdb_lbuffer_en_in ? cdb_lbuffer_value_in : `NULL;
+    assign dispatcher_rs2_rdy_out = rdy[dispatcher_rs2_in] || (cdb_alu_en_in && cdb_alu_dest_in == dispatcher_rs2_in) || (cdb_lbuffer_en_in && cdb_lbuffer_dest_in == dispatcher_rs2_in);
+    assign dispatcher_rs2_data_out = rdy[dispatcher_rs2_in] ? value[dispatcher_rs2_in] : cdb_alu_en_in ? cdb_alu_value_in : cdb_lbuffer_en_in ? cdb_lbuffer_value_in : `NULL;
     assign dispatcher_idle_pos_out = tail;
 
 endmodule

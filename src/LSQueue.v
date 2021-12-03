@@ -40,7 +40,6 @@ module LSQueue(
 
 localparam LSQueuelength = 16;
 
-reg S_qk_rob[LSQueuelength - 1 : 0];
 reg busy[LSQueuelength - 1 : 0];
 reg[`INST_TYPE_WIDTH] inst_type[LSQueuelength - 1 : 0];
 reg[`INSTRUCTION_WIDTH] vj[LSQueuelength - 1 : 0];
@@ -64,7 +63,6 @@ always @(posedge clk_in) begin
         addressUnit_en_out <= `DISABLE;
         for (i = 0 ; i <= LSQueuelength - 1 ; i = i + 1) begin
             busy[i] <= 1'b0;
-            S_qk_rob[i] <= 1'b0;
         end
     end
     else if (rdy_in) begin
@@ -75,13 +73,11 @@ always @(posedge clk_in) begin
             addressUnit_en_out <= `DISABLE;
             for (i = 0 ; i <= LSQueuelength - 1 ; i = i + 1) begin
                 busy[i] <= 1'b0;
-                S_qk_rob[i] <= 1'b0;
             end
         end
         else begin
             if (dispatcher_en_in) begin
                 busy[tail] <= 1'b1;
-                S_qk_rob[tail] <= 1'b0;
                 inst_type[tail] <= dispatcher_inst_type_in;
                 vj[tail] <= dispatcher_vj_in;
                 vk[tail] <= dispatcher_vk_in;
@@ -113,18 +109,6 @@ always @(posedge clk_in) begin
                             qk[i] <= `NULL;
                         end
                     end
-                    if (`SB <= inst_type[i] && inst_type[i] <= `SW) begin
-                        if (qk[i] == `NULL && !S_qk_rob[i]) begin
-                            S_qk_rob[i] <= 1'b1;
-                            rob_en_out <= `ENABLE;
-                            rob_dest_out <= dest[i];
-                            case (inst_type[i])
-                                `SB: rob_value_out <= vk[i][7 : 0];
-                                `SH: rob_value_out <= vk[i][15 : 0];
-                                `SW: rob_value_out <= vk[i][31 : 0];
-                            endcase
-                        end
-                    end
                 end
             end
             if (head != tail) begin
@@ -139,7 +123,14 @@ always @(posedge clk_in) begin
                     end
                 end
                 else if (`SB <= inst_type[head] && inst_type[head] <= `SW) begin
-                    if (qj[head] == `NULL) begin
+                    if (qj[head] == `NULL && qk[head] == `NULL) begin
+                        rob_en_out <= `ENABLE;
+                        rob_dest_out <= dest[head];
+                        case (inst_type[head])
+                            `SB: rob_value_out <= vk[head][7 : 0];
+                            `SH: rob_value_out <= vk[head][15 : 0];
+                            `SW: rob_value_out <= vk[head][31 : 0];
+                        endcase
                         addressUnit_en_out <= `ENABLE;
                         addressUnit_A_out <= A[head];
                         addressUnit_dest_out <= dest[head];
@@ -153,6 +144,6 @@ always @(posedge clk_in) begin
     end
 end
 
-assign instqueue_rdy_out = (head != (tail + 1) % LSQueuelength);
+assign instqueue_rdy_out = (head != (tail + 1) % LSQueuelength && head != (tail + 2) % LSQueuelength);
 
 endmodule

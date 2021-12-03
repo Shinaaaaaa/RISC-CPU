@@ -104,7 +104,7 @@ always @(posedge clk_in) begin
 end
 
 assign ram_bus_en_out = (!rst_in && !rob_flush_in && rdy_in && head != tail && !rob_load_check_sameaddress_in && status == `IDLE);
-assign lsqueue_rdy_out = (head != (tail + 1) % lbufferlength);
+assign lsqueue_rdy_out = (head != (tail + 1) % lbufferlength && head != (tail + 2) % lbufferlength);
 assign rob_load_check_en_out = (head != tail);
 assign rob_load_check_dest_out = lbuffer_dest[head];
 assign rob_load_check_address_out = lbuffer_A[head];

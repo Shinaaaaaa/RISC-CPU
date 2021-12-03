@@ -16,7 +16,7 @@ module register(
     output wire[`INSTRUCTION_WIDTH] dispatcher_rs2_data_out, 
     output wire dispatcher_rs2_busy_out,
     output wire[`ROB_WIDTH] dispatcher_rs2_dest_out,
-    
+
     input wire rob_en_in,
     input wire[`REGISTER_WIDTH] rob_reg_pos_in,
     input wire[`ROB_WIDTH] rob_dest_in,
@@ -40,7 +40,7 @@ always @(posedge clk_in) begin
     end
     else if (rdy_in) begin
         if (dispatcher_en_in && dispatcher_rd_in != 1'b0) begin
-            register_busy[dispatcher_rd_in] <= 1'b1;
+            register_busy[dispatcher_rd_in] <= `BUSY;
             register_rob_num[dispatcher_rd_in] <= dispatcher_rd_dest_in;
         end
         if (rob_en_in && rob_reg_pos_in != 1'b0) begin
@@ -59,6 +59,5 @@ assign dispatcher_rs1_dest_out = (dispatcher_rs1_in == 1'b0) ? `NULL : register_
 assign dispatcher_rs2_data_out = (dispatcher_rs2_in == 1'b0) ? `NULL : register_data[dispatcher_rs2_in];
 assign dispatcher_rs2_busy_out = (dispatcher_rs2_in == 1'b0) ? `NULL : register_busy[dispatcher_rs2_in];
 assign dispatcher_rs2_dest_out = (dispatcher_rs2_in == 1'b0) ? `NULL : register_rob_num[dispatcher_rs2_in];
-
 
 endmodule

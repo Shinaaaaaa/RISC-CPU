@@ -257,7 +257,7 @@ dispatcher dispatcher(
     .register_rd_out (dispatcher_register_rd),
     .register_rd_robnum_out (dispatcher_register_rd_dest),
     .register_rs1_data_in (register_dispatcher_rs1_data),
-    .register_rs1_busy_in (register_dispatcher_rs2_busy),
+    .register_rs1_busy_in (register_dispatcher_rs1_busy),
     .register_rs1_robnum_in (register_dispatcher_rs1_dest),
     .register_rs2_data_in (register_dispatcher_rs2_data),
     .register_rs2_busy_in (register_dispatcher_rs2_busy),

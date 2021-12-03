@@ -35,21 +35,19 @@ always @(posedge clk_in) begin
             status <= `IDLE;
             pc_value <= rob_pc_in;
         end
-        else if (instqueue_rdy_in) begin
-            if (ram_bus_rdy_in && !ram_bus_en_in) begin
-                status <= `BUSY;
-                ram_bus_pc_out <= pc_value;
-            end
-            else if (ram_bus_en_in) begin
-                status <= `IDLE;
-                instqueue_inst_en_out <= `ENABLE;
-                instqueue_inst_out <= ram_bus_inst_in;
-                instqueue_pc_out <= pc_value;
-                pc_value <= pc_value + 4;
-            end
+        else if (ram_bus_rdy_in && !ram_bus_en_in) begin
+            status <= `BUSY;
+            ram_bus_pc_out <= pc_value;
+        end
+        else if (ram_bus_en_in) begin
+            status <= `IDLE;
+            instqueue_inst_en_out <= `ENABLE;
+            instqueue_inst_out <= ram_bus_inst_in;
+            instqueue_pc_out <= pc_value;
+            pc_value <= pc_value + 4;
         end
     end
 end
-assign ram_bus_en_out = !status;
+assign ram_bus_en_out = !status && instqueue_rdy_in;
 
 endmodule

@@ -97,9 +97,6 @@ assign dest_out = rob_idle_pos_in;
 assign pc_out = decoder_pc_in;
 
 assign lsqueue_en_out = (`LB <= decoder_inst_type_in && decoder_inst_type_in <= `SW) && decoder_en_in ? `ENABLE : `DISABLE;
-assign lsqueue_inst_type_out = decoder_inst_type_in;
-assign lsqueue_A_out = decoder_imm_in;
-assign lsqueue_dest_out = rob_idle_pos_in;
 
 assign rob_en_out = decoder_en_in;
 assign rob_inst_type_out = decoder_inst_type_in;

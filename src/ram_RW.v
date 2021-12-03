@@ -43,6 +43,7 @@ localparam Stage_1 = 3'b001;
 localparam Stage_2 = 3'b010;
 localparam Stage_3 = 3'b011;
 localparam Stage_4 = 3'b100;
+localparam Stage_Finish = 3'b110;
 
 
 localparam read = 0;
@@ -246,8 +247,8 @@ always @(posedge clk_in) begin
                         `SB: begin
                             case (current_stage)
                                 Stage_Begin: current_stage <= Stage_0;
-                                Stage_0: current_stage <= Stage_1; 
-                                Stage_1: begin
+                                Stage_0: current_stage <= Stage_Finish; 
+                                Stage_Finish: begin
                                     rob_finish_out <= 1'b1;
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
@@ -259,8 +260,8 @@ always @(posedge clk_in) begin
                             case (current_stage)
                                 Stage_Begin: current_stage <= Stage_0;
                                 Stage_0: current_stage <= Stage_1;
-                                Stage_1: current_stage <= Stage_2; 
-                                Stage_2: begin
+                                Stage_1: current_stage <= Stage_Finish; 
+                                Stage_Finish: begin
                                     rob_finish_out <= 1'b1;
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
@@ -274,8 +275,8 @@ always @(posedge clk_in) begin
                                 Stage_0: current_stage <= Stage_1;
                                 Stage_1: current_stage <= Stage_2;
                                 Stage_2: current_stage <= Stage_3;
-                                Stage_3: current_stage <= Stage_4;
-                                Stage_4: begin
+                                Stage_3: current_stage <= Stage_Finish;
+                                Stage_Finish: begin
                                     rob_finish_out <= 1'b1;
                                     inst_tmp <= `NULL;
                                     status <= `IDLE;
@@ -291,6 +292,9 @@ always @(posedge clk_in) begin
 end
 
 always @(*) begin
+    ram_rw_out <= `NULL;
+    ram_addr_out <= `NULL;
+    ram_wdata_out <= `NULL;
     if (!rst_in && status == `BUSY) begin
         case (current_stage)
             Stage_0: begin

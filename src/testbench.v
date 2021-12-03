@@ -20,12 +20,13 @@ initial begin
   rst=1;
   repeat(50) #1 clk=!clk;
   rst=0; 
-  forever begin
-    #1 clk=!clk;
-    if ($time >= 3000) begin
-      $finish;
-    end
-  end
+  forever #1 clk=!clk;
+  // forever begin
+  //   #1 clk=!clk;
+  //   if ($time >= 100000) begin
+  //     $finish;
+  //   end
+  // end
 
   $finish;
 end
