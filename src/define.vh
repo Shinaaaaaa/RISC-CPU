@@ -6,7 +6,7 @@
 `define RAM_RW_WIDTH 7 : 0 
 `define REGISTER_WIDTH 4 : 0
 `define INST_TYPE_WIDTH 5 : 0
-`define ROB_WIDTH 3 : 0
+`define ROB_WIDTH 4 : 0
 `define RS_WIDTH 3 : 0
 `define LS_QUEUE_WIDTH 3 : 0 
 `define LBUFFER_WIDTH 3 : 0 

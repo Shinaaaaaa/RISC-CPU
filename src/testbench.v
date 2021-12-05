@@ -23,7 +23,7 @@ initial begin
   forever #1 clk=!clk;
   // forever begin
   //   #1 clk=!clk;
-  //   if ($time >= 100000) begin
+  //   if ($time >= 500000) begin
   //     $finish;
   //   end
   // end

@@ -50,12 +50,14 @@ reg[`INSTRUCTION_WIDTH] pc[RSlength - 1 : 0];
 
 integer i;
 
+reg[`RS_WIDTH] issue_tag;
 reg[`RS_WIDTH] idle_pos;
 reg[`RS_WIDTH] idle_new;
 
 always @(posedge clk_in) begin
     alu_en_out <= `DISABLE;
     if (rst_in) begin
+        issue_tag <= `NULL;
         idle_pos <= 1'b0;
         idle_new <= 1'b1;
         for (i = 0 ; i <= RSlength - 1; i = i + 1) begin
@@ -64,6 +66,7 @@ always @(posedge clk_in) begin
     end
     else if (rdy_in) begin
         if (rob_flush_in) begin
+            issue_tag <= `NULL;
             idle_pos <= 1'b0;
             idle_new <= 1'b1;
             for (i = 0 ; i <= RSlength - 1; i = i + 1) begin
@@ -73,7 +76,7 @@ always @(posedge clk_in) begin
         else begin
             idle_pos <= idle_new;
             idle_new <= `NULL;
-            if (dispatcher_en_in) begin //TODO need to change
+            if (dispatcher_en_in) begin
                 busy[idle_pos] <= `BUSY;
                 inst_type[idle_pos] <= dispatcher_inst_type_in;
                 vj[idle_pos] <= dispatcher_vj_in;
@@ -84,8 +87,12 @@ always @(posedge clk_in) begin
                 A[idle_pos] <= dispatcher_A_in;
                 pc[idle_pos] <= dispatcher_pc_in;
             end
-            for (i = 1 ; i < RSlength ; i = i + 1) begin
-                if (busy[i]) begin
+            if (issue_tag != `NULL) begin
+                busy[issue_tag] <= `IDLE;
+                issue_tag <= `NULL;
+            end
+            for (i = 1 ; i <= RSlength - 1 ; i = i + 1) begin
+                if (busy[i] && i != issue_tag) begin
                     if (cdb_alu_en_in) begin
                         if (qj[i] == cdb_alu_dest_in) begin
                             vj[i] <= cdb_alu_value_in;
@@ -115,7 +122,7 @@ always @(posedge clk_in) begin
                         alu_dest_out <= dest[i];
                         alu_pc_out <= pc[i];
                         alu_inst_type_out <= inst_type[i];
-                        busy[i] <= `IDLE;
+                        issue_tag <= i;
                     end
                     else if (`BEQ <= inst_type[i] && inst_type[i] <= `BGEU ||
                             inst_type[i] == `ADD ||
@@ -137,7 +144,7 @@ always @(posedge clk_in) begin
                             alu_dest_out <= dest[i];
                             alu_pc_out <= pc[i];
                             alu_inst_type_out <= inst_type[i];
-                            busy[i] <= `IDLE;
+                            issue_tag <= i;
                         end
                     end
                     else if (inst_type[i] == `JALR ||
@@ -158,7 +165,7 @@ always @(posedge clk_in) begin
                             alu_dest_out <= dest[i];
                             alu_pc_out <= pc[i];
                             alu_inst_type_out <= inst_type[i];
-                            busy[i] <= `IDLE;
+                            issue_tag <= i;
                         end
                     end
                 end

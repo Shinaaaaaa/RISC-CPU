@@ -89,6 +89,7 @@ wire[`ROB_WIDTH] register_dispatcher_rs2_dest;
 
 wire dispatcher_rob_en;
 wire[`INST_TYPE_WIDTH] dispatcher_rob_inst_type;
+wire[`INSTRUCTION_WIDTH] dispatcher_rob_pc;
 wire[`REGISTER_WIDTH] dispatcher_rob_reg_pos;
 wire[`ROB_WIDTH] dispatcher_rob_rs1;
 wire[`ROB_WIDTH] dispatcher_rob_rs2;
@@ -200,7 +201,7 @@ InstQueue InstQueue(
     .rst_in (rst_in),
     .rdy_in (rdy_in),
 
-    .rob_flush_in (flush),
+    .rob_flush_in (rob_flush),
 
     .rob_rdy_in (rob_instqueue_rdy),
 
@@ -265,6 +266,7 @@ dispatcher dispatcher(
     
     .rob_en_out (dispatcher_rob_en),
     .rob_inst_type_out (dispatcher_rob_inst_type),
+    .rob_pc_out (dispatcher_rob_pc),
     .rob_reg_pos_out (dispatcher_rob_reg_pos),
     .rob_rs1_out (dispatcher_rob_rs1),
     .rob_rs2_out (dispatcher_rob_rs2),
@@ -358,6 +360,7 @@ rob rob(
 
     .dispatcher_en_in (dispatcher_rob_en),
     .dispatcher_inst_type_in (dispatcher_rob_inst_type),
+    .dispatcher_pc_in (dispatcher_rob_pc),
     .dispatcher_reg_pos_in (dispatcher_rob_reg_pos),
     .dispatcher_rs1_in (dispatcher_rob_rs1),
     .dispatcher_rs2_in (dispatcher_rob_rs2),
@@ -534,6 +537,8 @@ register register(
     .clk_in (clk_in),
     .rst_in (rst_in),
     .rdy_in (rdy_in),
+
+    .rob_flush_in (rob_flush),
 
     .dispatcher_en_in (dispatcher_register_en),
     .dispatcher_rs1_in (dispatcher_register_rs1),

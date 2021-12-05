@@ -27,6 +27,7 @@ module dispatcher(
     
     output wire rob_en_out,
     output wire[`INST_TYPE_WIDTH] rob_inst_type_out,
+    output wire[`INSTRUCTION_WIDTH] rob_pc_out,
     output wire[`REGISTER_WIDTH] rob_reg_pos_out,
     output reg[`ROB_WIDTH] rob_rs1_out,
     output reg[`ROB_WIDTH] rob_rs2_out,
@@ -50,6 +51,8 @@ module dispatcher(
 );
 
 always @(*) begin
+    rob_rs1_out <= `NULL;
+    rob_rs2_out <= `NULL;
     if (!rst_in && decoder_en_in) 
         register_rs1_out <= decoder_rs1_in;
         if (register_rs1_busy_in) begin
@@ -100,6 +103,7 @@ assign lsqueue_en_out = (`LB <= decoder_inst_type_in && decoder_inst_type_in <= 
 
 assign rob_en_out = decoder_en_in;
 assign rob_inst_type_out = decoder_inst_type_in;
+assign rob_pc_out = decoder_pc_in;
 assign rob_reg_pos_out = decoder_rd_in; 
 
 endmodule

@@ -28,7 +28,8 @@ localparam queueLen = 5'b10000;
 reg[`INSTRUCTION_WIDTH] instQue[queueLen : 0];
 reg[`ADDRESS_WIDTH] pcQue[queueLen : 0];
 
-reg[4:0] head , tail;
+reg[4:0] head;
+reg[4:0] tail;
 integer i;
 
 always @(posedge clk_in) begin

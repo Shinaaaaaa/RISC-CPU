@@ -14,6 +14,7 @@ module rob(
 
     input wire dispatcher_en_in,
     input wire[`INST_TYPE_WIDTH] dispatcher_inst_type_in,
+    input wire[`INSTRUCTION_WIDTH] dispatcher_pc_in,
     input wire[`REGISTER_WIDTH] dispatcher_reg_pos_in,
     input wire[`ROB_WIDTH] dispatcher_rs1_in,
     input wire[`ROB_WIDTH] dispatcher_rs2_in,
@@ -68,6 +69,7 @@ module rob(
     reg[`REGISTER_WIDTH] reg_pos[roblength - 1 : 0];
     reg[`INSTRUCTION_WIDTH] value[roblength - 1 : 0];
     reg[`INSTRUCTION_WIDTH] addr[roblength - 1 : 0];
+    reg[`INSTRUCTION_WIDTH] pc[roblength - 1 : 0];
     reg rdy[roblength - 1 : 0];
 
     reg status;
@@ -75,11 +77,11 @@ module rob(
     reg[`ROB_WIDTH] tail;
     integer i;
 
-
     always @(posedge clk_in) begin
         if_en_out <= `DISABLE;
         flush <= `DISABLE;
         register_en_out <= `DISABLE;
+        register_dest_out <= `NULL;
         if (rst_in) begin
             head <= 1'b1;
             tail <= 1'b1;
@@ -96,6 +98,7 @@ module rob(
             if (dispatcher_en_in) begin
                 busy[tail] <= `BUSY;
                 inst_type[tail] <= dispatcher_inst_type_in;
+                pc[tail] <= dispatcher_pc_in;
                 reg_pos[tail] <= dispatcher_reg_pos_in;
                 rdy[tail] <= 1'b0;
                 tail <= tail % (roblength - 1) + 1;
@@ -146,7 +149,7 @@ module rob(
                         end
                     end
                     else begin
-                        head <= (head + 1) % roblength;
+                        head <= head % (roblength - 1) + 1;
                         busy[head] <= `IDLE;
                         rdy[head] <= `NULL;
                     end
@@ -166,7 +169,6 @@ module rob(
                     register_value_out <= value[head];
                     head <= head % (roblength - 1) + 1;
                     busy[head] <= `NULL;
-                    rdy[head] <= `NULL;
                     if (inst_type[head] == `JAL || inst_type[head] == `JALR) begin
                         if_en_out <= `ENABLE;
                         if_pc_out <= addr[head];

@@ -37,12 +37,12 @@ localparam IF = 0;
 localparam LB = 1;
 localparam ROB = 2;
 
-localparam Stage_Begin = 3'b101;
-localparam Stage_0 = 3'b000;
-localparam Stage_1 = 3'b001;
-localparam Stage_2 = 3'b010;
-localparam Stage_3 = 3'b011;
-localparam Stage_4 = 3'b100;
+localparam Stage_Begin = 3'b000;
+localparam Stage_0 = 3'b001;
+localparam Stage_1 = 3'b010;
+localparam Stage_2 = 3'b011;
+localparam Stage_3 = 3'b100;
+localparam Stage_4 = 3'b101;
 localparam Stage_Finish = 3'b110;
 
 

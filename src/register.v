@@ -5,6 +5,8 @@ module register(
     input wire rst_in,
     input wire rdy_in,
 
+    input wire rob_flush_in,
+
     input wire dispatcher_en_in,
     input wire[`REGISTER_WIDTH] dispatcher_rs1_in,
     input wire[`REGISTER_WIDTH] dispatcher_rs2_in,
@@ -39,9 +41,10 @@ always @(posedge clk_in) begin
         end 
     end
     else if (rdy_in) begin
-        if (dispatcher_en_in && dispatcher_rd_in != 1'b0) begin
-            register_busy[dispatcher_rd_in] <= `BUSY;
-            register_rob_num[dispatcher_rd_in] <= dispatcher_rd_dest_in;
+        if (rob_flush_in) begin
+            for (i = 0 ; i <= regwidth - 1 ; i = i + 1) begin
+                register_busy[i] <= `NULL;
+            end
         end
         if (rob_en_in && rob_reg_pos_in != 1'b0) begin
             register_data[rob_reg_pos_in] <= rob_value_in;
@@ -49,6 +52,10 @@ always @(posedge clk_in) begin
                 register_busy[rob_reg_pos_in] <= `IDLE;
                 register_rob_num[rob_reg_pos_in] <= `NULL;
             end
+        end
+        if (dispatcher_en_in && dispatcher_rd_in != 1'b0) begin
+            register_busy[dispatcher_rd_in] <= `BUSY;
+            register_rob_num[dispatcher_rd_in] <= dispatcher_rd_dest_in;
         end
     end 
 end
