@@ -55,57 +55,10 @@ reg[2 : 0] current_stage;
 reg[`INSTRUCTION_WIDTH] inst_tmp;
 
 always @(posedge clk_in) begin
-    if (status == `IDLE) begin
-        case (owner)
-            IF: begin
-                if (ifetch_en_in) begin
-                    status <= `BUSY;
-                    owner <= IF;
-                end 
-                else if (lbuffer_en_in) begin
-                    status <= `BUSY;
-                    owner <= LB;
-                end 
-                else if (rob_en_in) begin
-                    status <= `BUSY;
-                    owner <= ROB;
-                end 
-            end
-            LB: begin
-                if (lbuffer_en_in) begin
-                    status <= `BUSY;
-                    owner <= LB;
-                end 
-                else if (rob_en_in) begin
-                    status <= `BUSY;
-                    owner <= ROB;
-                end 
-                else if (ifetch_en_in) begin
-                    status <= `BUSY;
-                    owner <= IF;
-                end 
-            end
-            ROB: begin
-                if (rob_en_in) begin
-                    status <= `BUSY;
-                    owner <= ROB;
-                end 
-                else if (ifetch_en_in) begin
-                    status <= `BUSY;
-                    owner <= IF;
-                end 
-                else if (lbuffer_en_in) begin
-                    status <= `BUSY;
-                    owner <= LB;
-                end 
-            end 
-        endcase
-    end
-end
-
-always @(posedge clk_in) begin
     ifetch_en_out <= `DISABLE;
+    ifetch_inst_out <= `NULL;
     lbuffer_data_en_out <= `DISABLE;
+    lbuffer_data_out <= `NULL;
     rob_finish_out <= `DISABLE;
     if (rst_in) begin
         ifetch_en_out <= `DISABLE;
@@ -127,7 +80,53 @@ always @(posedge clk_in) begin
             inst_tmp <= `NULL;  
         end
         else begin
-            if (status == `BUSY) begin
+            if (status == `IDLE) begin
+                case (owner)
+                    IF: begin
+                        if (ifetch_en_in) begin
+                            status <= `BUSY;
+                            owner <= IF;
+                        end 
+                        else if (lbuffer_en_in) begin
+                            status <= `BUSY;
+                            owner <= LB;
+                        end 
+                        else if (rob_en_in) begin
+                            status <= `BUSY;
+                            owner <= ROB;
+                        end 
+                    end
+                    LB: begin
+                        if (lbuffer_en_in) begin
+                            status <= `BUSY;
+                            owner <= LB;
+                        end 
+                        else if (rob_en_in) begin
+                            status <= `BUSY;
+                            owner <= ROB;
+                        end 
+                        else if (ifetch_en_in) begin
+                            status <= `BUSY;
+                            owner <= IF;
+                        end 
+                    end
+                    ROB: begin
+                        if (rob_en_in) begin
+                            status <= `BUSY;
+                            owner <= ROB;
+                        end 
+                        else if (ifetch_en_in) begin
+                            status <= `BUSY;
+                            owner <= IF;
+                        end 
+                        else if (lbuffer_en_in) begin
+                            status <= `BUSY;
+                            owner <= LB;
+                        end 
+                    end 
+                endcase
+            end
+            else if (status == `BUSY) begin
                 if (owner == IF) begin
                     case (current_stage)
                         Stage_Begin: current_stage <= Stage_0;

@@ -79,9 +79,15 @@ module rob(
 
     always @(posedge clk_in) begin
         if_en_out <= `DISABLE;
+        if_pc_out <= `NULL;
         flush <= `DISABLE;
+        ram_bus_address_out <= `NULL;
+        ram_bus_wdata_out <= `NULL;
+        ram_bus_inst_type_out <= `NULL;
         register_en_out <= `DISABLE;
+        register_reg_pos_out <= `NULL;
         register_dest_out <= `NULL;
+        register_value_out <= `NULL;
         if (rst_in) begin
             head <= 1'b1;
             tail <= 1'b1;
@@ -192,8 +198,8 @@ module rob(
         lbuffer_load_check_forwarding_data_out <= `NULL;
         if (lbuffer_load_check_en) begin
             if (lbuffer_load_check_dest_in >= head) begin
-                for (i = head ; i < lbuffer_load_check_dest_in ; i = i + 1) begin
-                    if (`SB <= inst_type[i] && inst_type[i] <= `SW) begin
+                for (i = 1 ; i <= roblength - 1 ; i = i + 1) begin
+                    if (head <= i && i < lbuffer_load_check_dest_in && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
                             lbuffer_load_check_sameaddress_out <= 1'b1;
                             if (rdy[i]) begin
@@ -205,8 +211,8 @@ module rob(
                 end
             end
             else if (lbuffer_load_check_address_in < head) begin
-                for (i = head ; i <= roblength - 1 ; i = i + 1) begin
-                    if (`SB <= inst_type[i] && inst_type[i] <= `SW) begin
+                for (i = 1 ; i <= roblength - 1 ; i = i + 1) begin
+                    if (head <= i && i <= roblength - 1 && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
                             lbuffer_load_check_sameaddress_out <= 1'b1;
                             if (rdy[i]) begin
@@ -216,8 +222,8 @@ module rob(
                         end
                     end
                 end
-                for (i = 1 ; i < lbuffer_load_check_address_in ; i = i + 1) begin
-                    if (`SB <= inst_type[i] && inst_type[i] <= `SW) begin
+                for (i = 1 ; i <= roblength - 1 ; i = i + 1) begin
+                    if (1 <= i && i < lbuffer_load_check_address_in && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
                             lbuffer_load_check_sameaddress_out <= 1'b1;
                             if (rdy[i]) begin

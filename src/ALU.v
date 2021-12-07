@@ -25,6 +25,8 @@ localparam false = 0;
 localparam true = 1;
 
 always @(*) begin
+    cdb_alu_value_out <= `NULL;
+    cdb_alu_addr_out <= `NULL;
     case (rs_inst_type_in)
         `JAL: begin
             cdb_alu_value_out <= rs_pc_in + 4;

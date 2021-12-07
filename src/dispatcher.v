@@ -53,6 +53,12 @@ module dispatcher(
 always @(*) begin
     rob_rs1_out <= `NULL;
     rob_rs2_out <= `NULL;
+    register_rs1_out <= `NULL;
+    register_rs2_out <= `NULL;
+    vj_out <= `NULL;
+    qj_out <= `NULL;
+    vk_out <= `NULL;
+    qk_out <= `NULL;
     if (!rst_in && decoder_en_in) 
         register_rs1_out <= decoder_rs1_in;
         if (register_rs1_busy_in) begin

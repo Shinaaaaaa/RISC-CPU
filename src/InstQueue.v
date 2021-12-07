@@ -34,6 +34,8 @@ integer i;
 
 always @(posedge clk_in) begin
     decoder_en_out <= `DISABLE;
+    decoder_inst_out <= `NULL;
+    decoder_pc_out <= `NULL;
     if (rst_in) begin
         for (i = 0 ; i < queueLen ; i = i + 1) begin
             instQue[i] <= `NULL;

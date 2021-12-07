@@ -56,6 +56,12 @@ reg[`RS_WIDTH] idle_new;
 
 always @(posedge clk_in) begin
     alu_en_out <= `DISABLE;
+    alu_vj_out <= `NULL;
+    alu_vk_out <= `NULL;
+    alu_A_out <= `NULL;
+    alu_dest_out <= `NULL;
+    alu_pc_out <= `NULL;
+    alu_inst_type_out <= `NULL;
     if (rst_in) begin
         issue_tag <= `NULL;
         idle_pos <= 1'b0;

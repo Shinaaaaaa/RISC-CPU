@@ -43,9 +43,13 @@ reg[`INST_TYPE_WIDTH] lbuffer_inst_type[lbufferlength - 1 : 0];
 reg[`LBUFFER_WIDTH] head , tail;
 integer i;
 
-
 always @(posedge clk_in) begin
     cdb_lbuffer_en_out <= `DISABLE;
+    cdb_lbuffer_dest_out <= `NULL;
+    cdb_lbuffer_value_out <= `NULL;
+    ram_bus_A_out <= `NULL;
+    ram_bus_dest_out <= `NULL;
+    ram_bus_inst_type_out <= `NULL;
     if (rst_in) begin
         head <= `NULL;
         tail <= `NULL;

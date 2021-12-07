@@ -55,7 +55,13 @@ integer i;
 
 always @(posedge clk_in) begin
     rob_en_out <= `DISABLE;
+    rob_dest_out <= `NULL;
+    rob_value_out <= `NULL;
     addressUnit_en_out <= `DISABLE;
+    addressUnit_A_out <= `NULL;
+    addressUnit_vj_out <= `NULL;
+    addressUnit_dest_out <= `NULL;
+    addressUnit_inst_type_out <= `NULL;
     if (rst_in) begin
         head <= `NULL;
         tail <= `NULL;

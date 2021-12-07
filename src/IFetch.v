@@ -31,9 +31,11 @@ reg[taglength - 1 : 0] tag[cachelength - 1 : 0];
 reg[`INSTRUCTION_WIDTH] inst[cachelength - 1 : 0];
 integer i;
 
-
 always @(posedge clk_in) begin
     instqueue_inst_en_out <= `DISABLE;
+    ram_bus_pc_out <= `NULL;
+    instqueue_inst_out <= `NULL;
+    instqueue_pc_out <= `NULL;
     if (rst_in) begin
         status <= `IDLE;
         pc_value <= 1'b0;
