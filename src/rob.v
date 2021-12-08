@@ -193,18 +193,18 @@ module rob(
     end
 
     always @(*) begin
-        lbuffer_load_check_forwarding_en_out <= `DISABLE;
-        lbuffer_load_check_sameaddress_out <= `NULL;
-        lbuffer_load_check_forwarding_data_out <= `NULL;
+        lbuffer_load_check_forwarding_en_out = `DISABLE;
+        lbuffer_load_check_sameaddress_out = `NULL;
+        lbuffer_load_check_forwarding_data_out = `NULL;
         if (lbuffer_load_check_en) begin
             if (lbuffer_load_check_dest_in >= head) begin
                 for (i = 1 ; i <= roblength - 1 ; i = i + 1) begin
                     if (head <= i && i < lbuffer_load_check_dest_in && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
-                            lbuffer_load_check_sameaddress_out <= 1'b1;
+                            lbuffer_load_check_sameaddress_out = 1'b1;
                             if (rdy[i]) begin
-                                lbuffer_load_check_forwarding_en_out <= `ENABLE;
-                                lbuffer_load_check_forwarding_data_out <= value[i];
+                                lbuffer_load_check_forwarding_en_out = `ENABLE;
+                                lbuffer_load_check_forwarding_data_out = value[i];
                             end
                         end
                     end
@@ -214,10 +214,10 @@ module rob(
                 for (i = 1 ; i <= roblength - 1 ; i = i + 1) begin
                     if (head <= i && i <= roblength - 1 && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
-                            lbuffer_load_check_sameaddress_out <= 1'b1;
+                            lbuffer_load_check_sameaddress_out = 1'b1;
                             if (rdy[i]) begin
-                                lbuffer_load_check_forwarding_en_out <= `ENABLE;
-                                lbuffer_load_check_forwarding_data_out <= value[i];
+                                lbuffer_load_check_forwarding_en_out = `ENABLE;
+                                lbuffer_load_check_forwarding_data_out = value[i];
                             end
                         end
                     end
@@ -225,10 +225,10 @@ module rob(
                 for (i = 1 ; i <= roblength - 1 ; i = i + 1) begin
                     if (1 <= i && i < lbuffer_load_check_address_in && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
-                            lbuffer_load_check_sameaddress_out <= 1'b1;
+                            lbuffer_load_check_sameaddress_out = 1'b1;
                             if (rdy[i]) begin
-                                lbuffer_load_check_forwarding_en_out <= `ENABLE;
-                                lbuffer_load_check_forwarding_data_out <= value[i];
+                                lbuffer_load_check_forwarding_en_out = `ENABLE;
+                                lbuffer_load_check_forwarding_data_out = value[i];
                             end
                         end
                     end

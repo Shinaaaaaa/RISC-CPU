@@ -16,6 +16,10 @@ module ram_RW(
     input wire ifetch_en_in,
     input wire[`ADDRESS_WIDTH] ifetch_pc_in,
 
+    output reg icache_en_out,
+    output reg[`ADDRESS_WIDTH] icache_pc_out,
+    output reg[`INSTRUCTION_WIDTH] icache_inst_out,
+
     output wire lbuffer_rdy_out,
     output reg lbuffer_data_en_out,
     output reg[`INSTRUCTION_WIDTH] lbuffer_data_out,
@@ -45,7 +49,6 @@ localparam Stage_3 = 3'b100;
 localparam Stage_4 = 3'b101;
 localparam Stage_Finish = 3'b110;
 
-
 localparam read = 0;
 localparam write = 1;
 
@@ -60,8 +63,12 @@ always @(posedge clk_in) begin
     lbuffer_data_en_out <= `DISABLE;
     lbuffer_data_out <= `NULL;
     rob_finish_out <= `DISABLE;
+    icache_en_out <= `DISABLE;
+    icache_pc_out <= `NULL;
+    icache_inst_out <= `NULL;
     if (rst_in) begin
         ifetch_en_out <= `DISABLE;
+        icache_en_out <= `DISABLE;
         lbuffer_data_en_out <= `DISABLE;
         rob_finish_out <= `DISABLE;
         owner <= IF;
@@ -72,6 +79,7 @@ always @(posedge clk_in) begin
     else if (rdy_in) begin
         if (rob_flush_in) begin
             ifetch_en_out <= `DISABLE;
+            icache_en_out <= `DISABLE;
             lbuffer_data_en_out <= `DISABLE;
             rob_finish_out <= `DISABLE;
             owner <= IF;
@@ -147,6 +155,9 @@ always @(posedge clk_in) begin
                             ifetch_inst_out <= {ram_rdata_in , inst_tmp[23 : 0]};
                             current_stage <= Stage_Begin;
                             ifetch_en_out <= `ENABLE;
+                            icache_en_out <= `ENABLE;
+                            icache_pc_out <= ifetch_pc_in;
+                            icache_inst_out <= {ram_rdata_in , inst_tmp[23 : 0]};   
                             inst_tmp <= `NULL;
                             status <= `IDLE;
                         end
@@ -291,84 +302,84 @@ always @(posedge clk_in) begin
 end
 
 always @(*) begin
-    ram_rw_out <= `NULL;
-    ram_addr_out <= `NULL;
-    ram_wdata_out <= `NULL;
+    ram_rw_out = `NULL;
+    ram_addr_out = `NULL;
+    ram_wdata_out = `NULL;
     if (!rst_in && status == `BUSY) begin
         case (current_stage)
             Stage_0: begin
                 case (owner)
                     IF: begin
-                        ram_rw_out <= read;
-                        ram_addr_out <= ifetch_pc_in;
-                        ram_wdata_out <= `NULL;
+                        ram_rw_out = read;
+                        ram_addr_out = ifetch_pc_in;
+                        ram_wdata_out = `NULL;
                     end
                     LB: begin
-                        ram_rw_out <= read;
-                        ram_addr_out <= lbuffer_A_in;
-                        ram_wdata_out <= `NULL;
+                        ram_rw_out = read;
+                        ram_addr_out = lbuffer_A_in;
+                        ram_wdata_out = `NULL;
                     end
                     ROB: begin
-                        ram_rw_out <= write;
-                        ram_addr_out <= rob_addr_in;
-                        ram_wdata_out <= rob_wdata_in[7 : 0];
+                        ram_rw_out = write;
+                        ram_addr_out = rob_addr_in;
+                        ram_wdata_out = rob_wdata_in[7 : 0];
                     end
                 endcase
             end
             Stage_1: begin
                 case (owner)
                     IF: begin
-                        ram_rw_out <= read;
-                        ram_addr_out <= ifetch_pc_in + 32'h1;
-                        ram_wdata_out <= `NULL;
+                        ram_rw_out = read;
+                        ram_addr_out = ifetch_pc_in + 32'h1;
+                        ram_wdata_out = `NULL;
                     end
                     LB: begin
-                        ram_rw_out <= read;
-                        ram_addr_out <= lbuffer_A_in + 32'h1;
-                        ram_wdata_out <= `NULL;
+                        ram_rw_out = read;
+                        ram_addr_out = lbuffer_A_in + 32'h1;
+                        ram_wdata_out = `NULL;
                     end
                     ROB: begin
-                        ram_rw_out <= write;
-                        ram_addr_out <= rob_addr_in + 32'h1;
-                        ram_wdata_out <= rob_wdata_in[15 : 8];
+                        ram_rw_out = write;
+                        ram_addr_out = rob_addr_in + 32'h1;
+                        ram_wdata_out = rob_wdata_in[15 : 8];
                     end
                 endcase
             end
             Stage_2: begin
                 case (owner)
                     IF: begin
-                        ram_rw_out <= read;
-                        ram_addr_out <= ifetch_pc_in + 32'h2;
-                        ram_wdata_out <= `NULL;
+                        ram_rw_out = read;
+                        ram_addr_out = ifetch_pc_in + 32'h2;
+                        ram_wdata_out = `NULL;
                     end
                     LB: begin
-                        ram_rw_out <= read;
-                        ram_addr_out <= lbuffer_A_in + 32'h2;
-                        ram_wdata_out <= `NULL;
+                        ram_rw_out = read;
+                        ram_addr_out = lbuffer_A_in + 32'h2;
+                        ram_wdata_out = `NULL;
                     end
                     ROB: begin
-                        ram_rw_out <= write;
-                        ram_addr_out <= rob_addr_in + 32'h2;
-                        ram_wdata_out <= rob_wdata_in[23 : 16];
+                        ram_rw_out = write;
+                        ram_addr_out = rob_addr_in + 32'h2;
+                        ram_wdata_out = rob_wdata_in[23 : 16];
                     end
                 endcase
             end
             Stage_3: begin
                 case (owner)
                     IF: begin
-                        ram_rw_out <= read;
-                        ram_addr_out <= ifetch_pc_in + 32'h3;
-                        ram_wdata_out <= `NULL;
+                        ram_rw_out = read;
+                        ram_addr_out = ifetch_pc_in + 32'h3;
+                        ram_wdata_out = `NULL;
                     end
                     LB: begin
-                        ram_rw_out <= read;
-                        ram_addr_out <= lbuffer_A_in + 32'h3;
-                        ram_wdata_out <= `NULL;
+                        ram_rw_out = read;
+                        ram_addr_out = lbuffer_A_in + 32'h3;
+                        ram_wdata_out = `NULL;
                     end
                     ROB: begin
-                        ram_rw_out <= write;
-                        ram_addr_out <= rob_addr_in + 32'h3;
-                        ram_wdata_out <= rob_wdata_in[31 : 24];
+                        ram_rw_out = write;
+                        ram_addr_out = rob_addr_in + 32'h3;
+                        ram_wdata_out = rob_wdata_in[31 : 24];
                     end
                 endcase
             end

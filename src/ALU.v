@@ -25,68 +25,68 @@ localparam false = 0;
 localparam true = 1;
 
 always @(*) begin
-    cdb_alu_value_out <= `NULL;
-    cdb_alu_addr_out <= `NULL;
+    cdb_alu_value_out = `NULL;
+    cdb_alu_addr_out = `NULL;
     case (rs_inst_type_in)
         `JAL: begin
-            cdb_alu_value_out <= rs_pc_in + 4;
-            cdb_alu_addr_out <= rs_pc_in + rs_A_in;
+            cdb_alu_value_out = rs_pc_in + 4;
+            cdb_alu_addr_out = rs_pc_in + rs_A_in;
         end 
-        `LUI: cdb_alu_value_out <= rs_A_in;
-        `AUIPC: cdb_alu_value_out <= rs_pc_in + rs_A_in;
+        `LUI: cdb_alu_value_out = rs_A_in;
+        `AUIPC: cdb_alu_value_out = rs_pc_in + rs_A_in;
         `BEQ: begin
-            if (rs_vj_in == rs_vk_in) cdb_alu_value_out <= true;
-            else cdb_alu_value_out <= false;
-            cdb_alu_addr_out <= rs_pc_in + rs_A_in; 
+            if (rs_vj_in == rs_vk_in) cdb_alu_value_out = true;
+            else cdb_alu_value_out = false;
+            cdb_alu_addr_out = rs_pc_in + rs_A_in; 
         end 
         `BNE: begin
-            if (rs_vj_in != rs_vk_in) cdb_alu_value_out <= true;
-            else cdb_alu_value_out <= false;
-            cdb_alu_addr_out <= rs_pc_in + rs_A_in;
+            if (rs_vj_in != rs_vk_in) cdb_alu_value_out = true;
+            else cdb_alu_value_out = false;
+            cdb_alu_addr_out = rs_pc_in + rs_A_in;
         end
         `BLT: begin
-            if ($signed(rs_vj_in) < $signed(rs_vk_in)) cdb_alu_value_out <= true;
-            else cdb_alu_value_out <= false;
-            cdb_alu_addr_out <= rs_pc_in + rs_A_in;
+            if ($signed(rs_vj_in) < $signed(rs_vk_in)) cdb_alu_value_out = true;
+            else cdb_alu_value_out = false;
+            cdb_alu_addr_out = rs_pc_in + rs_A_in;
         end
         `BGE: begin
-            if ($signed(rs_vj_in) >= $signed(rs_vk_in)) cdb_alu_value_out <= true;
-            else cdb_alu_value_out <= false;
-            cdb_alu_addr_out <= rs_pc_in + rs_A_in;
+            if ($signed(rs_vj_in) >= $signed(rs_vk_in)) cdb_alu_value_out = true;
+            else cdb_alu_value_out = false;
+            cdb_alu_addr_out = rs_pc_in + rs_A_in;
         end
         `BLTU: begin
-            if ($unsigned(rs_vj_in) < $unsigned(rs_vk_in)) cdb_alu_value_out <= true;
-            else cdb_alu_value_out <= false;
-            cdb_alu_addr_out <= rs_pc_in + rs_A_in;
+            if ($unsigned(rs_vj_in) < $unsigned(rs_vk_in)) cdb_alu_value_out = true;
+            else cdb_alu_value_out = false;
+            cdb_alu_addr_out = rs_pc_in + rs_A_in;
         end
         `BGEU: begin
-            if ($unsigned(rs_vj_in) >= $unsigned(rs_vk_in)) cdb_alu_value_out <= true;
-            else cdb_alu_value_out <= false;
-            cdb_alu_addr_out <= rs_pc_in + rs_A_in;
+            if ($unsigned(rs_vj_in) >= $unsigned(rs_vk_in)) cdb_alu_value_out = true;
+            else cdb_alu_value_out = false;
+            cdb_alu_addr_out = rs_pc_in + rs_A_in;
         end
-        `ADD: cdb_alu_value_out <= rs_vj_in + rs_vk_in;
-        `SUB: cdb_alu_value_out <= rs_vj_in - rs_vk_in;
-        `XOR: cdb_alu_value_out <= rs_vj_in ^ rs_vk_in;
-        `OR: cdb_alu_value_out <= rs_vj_in | rs_vk_in;
-        `AND: cdb_alu_value_out <= rs_vj_in & rs_vk_in;
-        `SLL: cdb_alu_value_out <= rs_vj_in << rs_vk_in[4 : 0];
-        `SRL: cdb_alu_value_out <= rs_vj_in >> rs_vk_in[4 : 0]; 
-        `SRA: cdb_alu_value_out <= $signed(rs_vj_in >> rs_vk_in[4 : 0]);
-        `SLT: cdb_alu_value_out <= ($signed(rs_vj_in) < $signed(rs_vk_in));
-        `SLTU: cdb_alu_value_out <= ($unsigned(rs_vj_in) < $unsigned(rs_vk_in));
+        `ADD: cdb_alu_value_out = rs_vj_in + rs_vk_in;
+        `SUB: cdb_alu_value_out = rs_vj_in - rs_vk_in;
+        `XOR: cdb_alu_value_out = rs_vj_in ^ rs_vk_in;
+        `OR: cdb_alu_value_out = rs_vj_in | rs_vk_in;
+        `AND: cdb_alu_value_out = rs_vj_in & rs_vk_in;
+        `SLL: cdb_alu_value_out = rs_vj_in << rs_vk_in[4 : 0];
+        `SRL: cdb_alu_value_out = rs_vj_in >> rs_vk_in[4 : 0]; 
+        `SRA: cdb_alu_value_out = $signed(rs_vj_in >> rs_vk_in[4 : 0]);
+        `SLT: cdb_alu_value_out = ($signed(rs_vj_in) < $signed(rs_vk_in));
+        `SLTU: cdb_alu_value_out = ($unsigned(rs_vj_in) < $unsigned(rs_vk_in));
         `JALR: begin
-            cdb_alu_value_out <= rs_pc_in + 4;
-            cdb_alu_addr_out <= (rs_vj_in + rs_A_in)&~1;
+            cdb_alu_value_out = rs_pc_in + 4;
+            cdb_alu_addr_out = (rs_vj_in + rs_A_in)&~1;
         end
-        `ADDI: cdb_alu_value_out <= rs_vj_in + rs_A_in;
-        `XORI: cdb_alu_value_out <= rs_vj_in ^ rs_A_in;
-        `ORI: cdb_alu_value_out <= rs_vj_in | rs_A_in;
-        `ANDI: cdb_alu_value_out <= rs_vj_in & rs_A_in;
-        `SLLI: cdb_alu_value_out <= rs_vj_in << rs_A_in;
-        `SRLI: cdb_alu_value_out <= rs_vj_in >> rs_A_in;
-        `SRAI: cdb_alu_value_out <= $signed(rs_vj_in >> rs_A_in);
-        `SLTI: cdb_alu_value_out <= ($signed(rs_vj_in) < $signed(rs_A_in));
-        `SLTIU: cdb_alu_value_out <= ($unsigned(rs_vj_in) < $unsigned(rs_A_in));
+        `ADDI: cdb_alu_value_out = rs_vj_in + rs_A_in;
+        `XORI: cdb_alu_value_out = rs_vj_in ^ rs_A_in;
+        `ORI: cdb_alu_value_out = rs_vj_in | rs_A_in;
+        `ANDI: cdb_alu_value_out = rs_vj_in & rs_A_in;
+        `SLLI: cdb_alu_value_out = rs_vj_in << rs_A_in;
+        `SRLI: cdb_alu_value_out = rs_vj_in >> rs_A_in;
+        `SRAI: cdb_alu_value_out = $signed(rs_vj_in >> rs_A_in);
+        `SLTI: cdb_alu_value_out = ($signed(rs_vj_in) < $signed(rs_A_in));
+        `SLTIU: cdb_alu_value_out = ($unsigned(rs_vj_in) < $unsigned(rs_A_in));
     endcase
 end
 

@@ -51,47 +51,47 @@ module dispatcher(
 );
 
 always @(*) begin
-    rob_rs1_out <= `NULL;
-    rob_rs2_out <= `NULL;
-    register_rs1_out <= `NULL;
-    register_rs2_out <= `NULL;
-    vj_out <= `NULL;
-    qj_out <= `NULL;
-    vk_out <= `NULL;
-    qk_out <= `NULL;
+    rob_rs1_out = `NULL;
+    rob_rs2_out = `NULL;
+    register_rs1_out = `NULL;
+    register_rs2_out = `NULL;
+    vj_out = `NULL;
+    qj_out = `NULL;
+    vk_out = `NULL;
+    qk_out = `NULL;
     if (!rst_in && decoder_en_in) 
-        register_rs1_out <= decoder_rs1_in;
+        register_rs1_out = decoder_rs1_in;
         if (register_rs1_busy_in) begin
-            rob_rs1_out <= register_rs1_robnum_in;
+            rob_rs1_out = register_rs1_robnum_in;
             if (rob_rs1_rdy_in) begin
-                vj_out <= rob_rs1_data_in;
-                qj_out <= `NULL;
+                vj_out = rob_rs1_data_in;
+                qj_out = `NULL;
             end
             else begin
-                vj_out <= `NULL;
-                qj_out <= register_rs1_robnum_in;
+                vj_out = `NULL;
+                qj_out = register_rs1_robnum_in;
             end
         end
         else begin
-            vj_out <= register_rs1_data_in;
-            qj_out <= `NULL; 
+            vj_out = register_rs1_data_in;
+            qj_out = `NULL; 
         end 
 
-        register_rs2_out <= decoder_rs2_in;
+        register_rs2_out = decoder_rs2_in;
         if (register_rs2_busy_in) begin
-            rob_rs2_out <= register_rs2_robnum_in;
+            rob_rs2_out = register_rs2_robnum_in;
             if (rob_rs2_rdy_in) begin
-                vk_out <= rob_rs2_data_in;
-                qk_out <= `NULL;
+                vk_out = rob_rs2_data_in;
+                qk_out = `NULL;
             end
             else begin
-                vk_out <= `NULL;
-                qk_out <= register_rs2_robnum_in;
+                vk_out = `NULL;
+                qk_out = register_rs2_robnum_in;
             end
         end
         else begin
-            vk_out <= register_rs2_data_in;
-            qk_out <= `NULL; 
+            vk_out = register_rs2_data_in;
+            qk_out = `NULL; 
         end
 end
 

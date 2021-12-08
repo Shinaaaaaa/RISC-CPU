@@ -13,6 +13,7 @@
 `include "register.v"
 `include "rob.v"
 `include "RS.v"
+`include "ICache.v"
 
 module cpu(
     input  wire                 clk_in,			// system clock signal
@@ -48,6 +49,14 @@ wire ram_bus_ifetch_en;
 wire[`INSTRUCTION_WIDTH] ram_bus_ifetch_inst;
 wire ifetch_ram_bus_en;
 wire[`ADDRESS_WIDTH] ifetch_ram_bus_pc;
+
+wire[`INSTRUCTION_WIDTH] ifetch_icache_pc;
+wire[`ADDRESS_WIDTH] icache_ifetch_inst;
+wire icache_ifetch_miss;
+
+wire ram_bus_icache_en;
+wire[`ADDRESS_WIDTH] ram_bus_icache_pc;
+wire[`INSTRUCTION_WIDTH] ram_bus_icache_inst;
 
 wire instqueue_ifetch_rdy;
 wire ifetch_instqueue_en;
@@ -191,6 +200,10 @@ IFetch IFetch(
     .instqueue_inst_en_out (ifetch_instqueue_en),
     .instqueue_inst_out (ifetch_instqueue_inst),
     .instqueue_pc_out (ifetch_instqueue_pc),
+
+    .icache_pc_out (ifetch_icache_pc),
+    .icache_inst_in (icache_ifetch_inst),
+    .icache_miss_in (icache_ifetch_miss),
 
     .rob_en_in (rob_ifetch_en),
     .rob_pc_in (rob_ifetch_pc)
@@ -516,6 +529,10 @@ ram_RW ram_RW(
     .ifetch_en_in (ifetch_ram_bus_en),
     .ifetch_pc_in (ifetch_ram_bus_pc),
 
+    .icache_en_out (ram_bus_icache_en),
+    .icache_pc_out (ram_bus_icache_pc),
+    .icache_inst_out (ram_bus_icache_inst),
+
     .lbuffer_rdy_out (ram_bus_lbuffer_rdy),
     .lbuffer_data_en_out (ram_bus_lbuffer_data_en),
     .lbuffer_data_out (ram_bus_lbuffer_data),
@@ -556,6 +573,20 @@ register register(
     .rob_reg_pos_in (rob_register_reg_pos),
     .rob_dest_in (rob_register_dest),
     .rob_value_in (rob_register_value)
+);
+
+ICache ICahce(
+    .clk_in (clk_in),
+    .rst_in (rst_in),
+    .rdy_in (rdy_in),
+
+    .ifetch_pc_in (ifetch_icache_pc),
+    .ifetch_inst_out (icache_ifetch_inst),
+    .ifetch_miss_out (icache_ifetch_miss),
+
+    .ram_bus_en_in (ram_bus_icache_en),
+    .ram_bus_pc_in (ram_bus_icache_pc),
+    .ram_bus_inst_in (ram_bus_icache_inst)
 );
 
 endmodule

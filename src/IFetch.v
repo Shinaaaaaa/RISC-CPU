@@ -16,20 +16,16 @@ module IFetch(
     output reg[`INSTRUCTION_WIDTH] instqueue_inst_out,
     output reg[`ADDRESS_WIDTH] instqueue_pc_out,
 
+    output wire[`INSTRUCTION_WIDTH] icache_pc_out,
+    input wire[`ADDRESS_WIDTH] icache_inst_in,
+    input wire icache_miss_in,
+
     input wire rob_en_in,
     input wire[`ADDRESS_WIDTH] rob_pc_in
 );
     
 reg status;
 reg[`ADDRESS_WIDTH] pc_value;
-
-localparam cachelength = 1024;
-localparam indexlength = 10;
-localparam taglength = 22;
-
-reg[taglength - 1 : 0] tag[cachelength - 1 : 0];
-reg[`INSTRUCTION_WIDTH] inst[cachelength - 1 : 0];
-integer i;
 
 always @(posedge clk_in) begin
     instqueue_inst_en_out <= `DISABLE;
@@ -40,10 +36,6 @@ always @(posedge clk_in) begin
         status <= `IDLE;
         pc_value <= 1'b0;
         instqueue_inst_en_out <= `DISABLE;
-        for (i = 0 ; i <= cachelength - 1 ; i = i + 1) begin
-            tag[i] <= `NULL;
-            inst[i] <= `NULL;
-        end
     end
     else if (rdy_in) begin
         if (rob_en_in) begin
@@ -51,9 +43,9 @@ always @(posedge clk_in) begin
             pc_value <= rob_pc_in;
         end
         else if (instqueue_rdy_in) begin
-            if (pc_value[31 : 10] == tag[pc_value[9 : 0]] && inst[pc_value[9 : 0]] != `NULL) begin
+            if (!icache_miss_in) begin
                 instqueue_inst_en_out <= `ENABLE;
-                instqueue_inst_out <= inst[pc_value[9 : 0]];
+                instqueue_inst_out <= icache_inst_in;
                 instqueue_pc_out <= pc_value;
                 pc_value <= pc_value + 4;
             end
@@ -67,8 +59,6 @@ always @(posedge clk_in) begin
                     instqueue_inst_en_out <= `ENABLE;
                     instqueue_inst_out <= ram_bus_inst_in;
                     instqueue_pc_out <= pc_value;
-                    tag[pc_value[9 : 0]] <= pc_value[31 : 10];
-                    inst[pc_value[9 : 0]] <= ram_bus_inst_in;
                     pc_value <= pc_value + 4;
                 end   
             end
@@ -76,6 +66,7 @@ always @(posedge clk_in) begin
     end
 end
 
-assign ram_bus_en_out = !rob_en_in && !status && instqueue_rdy_in && !(pc_value[31 : 10] == tag[pc_value[9 : 0]] && inst[pc_value[9 : 0]] != `NULL);
+assign icache_pc_out = pc_value;
+assign ram_bus_en_out = !rob_en_in && !status && instqueue_rdy_in && icache_miss_in;
 
 endmodule

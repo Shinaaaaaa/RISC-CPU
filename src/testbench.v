@@ -31,9 +31,9 @@ initial begin
   $finish;
 end
 
-initial begin
-  $dumpfile("test.vcd");
-  $dumpvars;
-end
+// initial begin
+//   $dumpfile("test.vcd");
+//   $dumpvars;
+// end
 
 endmodule
