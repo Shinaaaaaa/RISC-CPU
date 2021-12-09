@@ -210,7 +210,7 @@ module rob(
                     end
                 end
             end
-            else if (lbuffer_load_check_address_in < head) begin
+            else if (lbuffer_load_check_dest_in < head) begin
                 for (i = 1 ; i <= roblength - 1 ; i = i + 1) begin
                     if (head <= i && i <= roblength - 1 && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
@@ -223,7 +223,7 @@ module rob(
                     end
                 end
                 for (i = 1 ; i <= roblength - 1 ; i = i + 1) begin
-                    if (1 <= i && i < lbuffer_load_check_address_in && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
+                    if (1 <= i && i < lbuffer_load_check_dest_in && `SB <= inst_type[i] && inst_type[i] <= `SW) begin
                         if (lbuffer_load_check_address_in == addr[i]) begin
                             lbuffer_load_check_sameaddress_out = 1'b1;
                             if (rdy[i]) begin
@@ -233,6 +233,13 @@ module rob(
                         end
                     end
                 end
+            end
+            if (lbuffer_load_check_address_in == 18'h30000) begin
+                if (lbuffer_load_check_dest_in != head) begin
+                    lbuffer_load_check_sameaddress_out = 1'b1;
+                    lbuffer_load_check_forwarding_en_out = 1'b0;
+                end
+                else lbuffer_load_check_sameaddress_out = 1'b0;
             end
         end
     end

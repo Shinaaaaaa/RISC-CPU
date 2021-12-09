@@ -21,19 +21,7 @@ initial begin
   repeat(50) #1 clk=!clk;
   rst=0; 
   forever #1 clk=!clk;
-  // forever begin
-  //   #1 clk=!clk;
-  //   if ($time >= 500000) begin
-  //     $finish;
-  //   end
-  // end
-
   $finish;
 end
-
-// initial begin
-//   $dumpfile("test.vcd");
-//   $dumpvars;
-// end
 
 endmodule

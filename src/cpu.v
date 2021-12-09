@@ -518,6 +518,8 @@ ram_RW ram_RW(
     .rst_in (rst_in),
     .rdy_in (rdy_in),
 
+    .io_buffer_full (io_buffer_full),
+
     .ram_rdata_in (mem_din),
     .ram_wdata_out (mem_dout),
     .ram_addr_out (mem_a),

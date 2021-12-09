@@ -5,6 +5,8 @@ module ram_RW(
     input wire rst_in,
     input wire rdy_in,
 
+    input wire io_buffer_full,
+
     input wire[`RAM_RW_WIDTH] ram_rdata_in,
     output reg[`RAM_RW_WIDTH] ram_wdata_out,
     output reg[`ADDRESS_WIDTH] ram_addr_out,
@@ -99,7 +101,7 @@ always @(posedge clk_in) begin
                             status <= `BUSY;
                             owner <= LB;
                         end 
-                        else if (rob_en_in) begin
+                        else if (rob_en_in && !io_buffer_full) begin
                             status <= `BUSY;
                             owner <= ROB;
                         end 
@@ -109,7 +111,7 @@ always @(posedge clk_in) begin
                             status <= `BUSY;
                             owner <= LB;
                         end 
-                        else if (rob_en_in) begin
+                        else if (rob_en_in && !io_buffer_full) begin
                             status <= `BUSY;
                             owner <= ROB;
                         end 
@@ -127,7 +129,7 @@ always @(posedge clk_in) begin
                             status <= `BUSY;
                             owner <= IF;
                         end 
-                        else if (lbuffer_en_in) begin
+                        else if (lbuffer_en_in && !io_buffer_full) begin
                             status <= `BUSY;
                             owner <= LB;
                         end 
@@ -389,6 +391,6 @@ end
 
 assign ifetch_rdy_out = (owner == IF) ? `ENABLE : `DISABLE;
 assign lbuffer_rdy_out = (owner == LB) ? `ENABLE : `DISABLE;
-assign rob_rdy_out = (owner == ROB) ? `ENABLE : `DISABLE;
+assign rob_rdy_out = (io_buffer_full) ? `DISABLE :  (owner == ROB) ? `ENABLE : `DISABLE;
 
 endmodule
